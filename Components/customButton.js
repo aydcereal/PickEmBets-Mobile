@@ -4,8 +4,9 @@ import { Colors } from "../Constants/colors";
 import { useState } from "react";
 import { useFonts } from "expo-font";
 
-function CustomButton({ onPress, color, children }) {
-  const [backgroundColor, setBackgroundColor] = useState(color);
+function CustomButton({ onPress, bgColor, fColor, children }) {
+  const [backgroundColor, setBackgroundColor] = useState(bgColor);
+  const [fontColor, setFontColor] = useState(fColor);
 
   const [fontsLoaded] = useFonts({
     BebasNeue: require("../assets/Fonts/BebasNeue.ttf"),
@@ -24,7 +25,7 @@ function CustomButton({ onPress, color, children }) {
       ]}
       onPress={onPress}
     >
-      <Text style={styles.text}>{children}</Text>
+      <Text style={[styles.text, { color: fontColor }]}>{children}</Text>
     </Pressable>
   );
 }
@@ -33,10 +34,9 @@ export default CustomButton;
 
 const styles = StyleSheet.create({
   button: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    padding: 12,
     margin: 4,
-    marginVertical: 16,
+    marginVertical: 8,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",

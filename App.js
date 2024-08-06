@@ -4,8 +4,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Authentication } from "./Screens/Authentication";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-
-import { Header } from "./Components/Header";
+import { OnlyLogoHeader, ReturnHeader } from "./Components/Headers/Header";
+import { SignUp } from "./Screens/SignUp";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,12 +16,20 @@ export default function App() {
       <SafeAreaProvider style={styles.container}>
         <SafeAreaView style={{ flex: 1 }}>
           <NavigationContainer>
-            <Stack.Navigator>
+            <Stack.Navigator initialRouteName="Authentication">
               <Stack.Screen
                 name="Authentication"
                 component={Authentication}
                 options={{
-                  header: (props) => <Header />,
+                  header: (props) => <OnlyLogoHeader />,
+                  headerTitleAlign: "left",
+                }}
+              />
+              <Stack.Screen
+                name="SignUp"
+                component={SignUp}
+                options={{
+                  header: (props) => <ReturnHeader />,
                   headerTitleAlign: "left",
                 }}
               />

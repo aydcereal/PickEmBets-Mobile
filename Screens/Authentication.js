@@ -2,13 +2,21 @@ import { StyleSheet, Text, View, Image } from "react-native";
 import heroImg from "../assets/Logos/hero.png";
 import CustomButton from "../Components/customButton";
 
-export function Authentication() {
+export function Authentication({ navigation }) {
   return (
     <View style={styles.container}>
       <Image style={styles.img} source={heroImg} />
       <View style={styles.innerContainer}>
-        <CustomButton color={"black"}>LOGIN</CustomButton>
-        <CustomButton color={"red"}>SIGN UP</CustomButton>
+        <CustomButton bgColor={"black"} fColor={"white"}>
+          LOGIN
+        </CustomButton>
+        <CustomButton
+          onPress={() => navigation.navigate("SignUp")}
+          bgColor={"red"}
+          fColor={"white"}
+        >
+          SIGN UP
+        </CustomButton>
       </View>
     </View>
   );
@@ -18,6 +26,7 @@ const styles = StyleSheet.create({
   img: {
     width: 366,
     height: 366,
+    margin: 80,
   },
   container: {
     flex: 1,
