@@ -2,23 +2,82 @@ import { StyleSheet, Text, View, Image, TextInput } from "react-native";
 import heroImg from "../assets/Logos/hero.png";
 import CustomButton from "../Components/customButton";
 import { useFonts } from "expo-font";
+import { useRef, useState } from "react";
 
 export function SignUp({ navigation }) {
   const [fontsLoaded] = useFonts({
     BebasNeue: require("../assets/Fonts/BebasNeue.ttf"),
   });
+
+  const [userDetails, setUserDetails] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+  });
+
+  const [userIsTaken, setUserIsTaken] = useState(false);
+  const [emailUsed, setEmailIsUsed] = useState(false);
+
+  const usernameRef = useRef();
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  const confirmPasswordRef = useRef();
+
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
         <Text style={styles.title}>Sign Up</Text>
-        <TextInput style={styles.input} placeholder="Username"></TextInput>
-        <TextInput style={styles.input} placeholder="Email"></TextInput>
+        {userIsTaken && (
+          <Text style={styles.errorText}>Username is already taken.</Text>
+        )}
         <TextInput
+          ref={usernameRef}
+          returnKeyType="next"
+          onSubmitEditing={() => emailRef.current.focus()}
+          style={[styles.input, { borderColor: userIsTaken ? "red" : null }]}
+          placeholder="Username"
+          onEndEditing={(e) => {
+            console.log(e.nativeEvent.text);
+
+            if (e.nativeEvent.text === "Jordy") {
+              setUserIsTaken(true);
+            } else {
+              setUserIsTaken(false);
+            }
+          }}
+        ></TextInput>
+        {emailUsed && (
+          <Text style={styles.errorText}>
+            This email already has an account.
+          </Text>
+        )}
+        <TextInput
+          ref={emailRef}
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current.focus()}
+          style={[styles.input, { borderColor: emailUsed ? "red" : null }]}
+          onEndEditing={(e) => {
+            console.log(e.nativeEvent.text);
+
+            if (e.nativeEvent.text === "Jordyfigueroa93@icloud.com") {
+              setEmailIsUsed(true);
+            } else {
+              setEmailIsUsed(false);
+            }
+          }}
+          placeholder="Email"
+        ></TextInput>
+
+        <TextInput
+          ref={passwordRef}
+          returnKeyType="next"
+          onSubmitEditing={() => confirmPasswordRef.current.focus()}
           style={styles.input}
           placeholder="password"
           secureTextEntry={true}
         ></TextInput>
         <TextInput
+          ref={confirmPasswordRef}
           style={styles.input}
           placeholder="Confirm Password"
           secureTextEntry={true}
@@ -60,8 +119,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 8,
     backgroundColor: "#D9D9D9",
+    borderWidth: 1,
   },
   buttonSpace: {
     marginVertical: 55,
+  },
+  errorText: {
+    textAlign: "center",
   },
 });
