@@ -1,13 +1,10 @@
-import { Pressable, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
+
 import { Colors } from "../Constants/colors";
 import { useState } from "react";
 import { useFonts } from "expo-font";
 
-function CustomButton({ onPress, bgColor, fColor, children }) {
-  const [backgroundColor, setBackgroundColor] = useState(bgColor);
-  const [fontColor, setFontColor] = useState(fColor);
-
+function CustomButton({ onPress, bgColor, fColor, children, disabled }) {
   const [fontsLoaded] = useFonts({
     BebasNeue: require("../assets/Fonts/BebasNeue.ttf"),
   });
@@ -17,16 +14,17 @@ function CustomButton({ onPress, bgColor, fColor, children }) {
   }
 
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: backgroundColor },
-        pressed && styles.pressed,
-      ]}
+    <TouchableOpacity
       onPress={onPress}
+      style={[
+        styles.button,
+        { backgroundColor: bgColor },
+        disabled && styles.disabledButton,
+      ]}
+      disabled={disabled}
     >
-      <Text style={[styles.text, { color: fontColor }]}>{children}</Text>
-    </Pressable>
+      <Text style={[styles.text, { color: fColor }]}>{children}</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -45,12 +43,13 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-  icon: {
-    marginRight: 6,
-  },
+
   text: {
     fontSize: 24,
     color: "white",
     fontFamily: "BebasNeue",
+  },
+  disabledButton: {
+    backgroundColor: "gray",
   },
 });

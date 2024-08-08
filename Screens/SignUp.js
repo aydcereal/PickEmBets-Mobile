@@ -2,26 +2,61 @@ import { StyleSheet, Text, View, Image, TextInput } from "react-native";
 import heroImg from "../assets/Logos/hero.png";
 import CustomButton from "../Components/customButton";
 import { useFonts } from "expo-font";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
+import AuthContext from "../context/auth-context";
 
 export function SignUp({ navigation }) {
+  const { checkIfEmailExists, isDisplayNameUnique } = useContext(AuthContext);
   const [fontsLoaded] = useFonts({
     BebasNeue: require("../assets/Fonts/BebasNeue.ttf"),
   });
 
+  const submitHandler = async () => {
+    const isEmailUnique = await checkIfEmailExists(userDetails.email);
+    const isUserNameUnique = await isDisplayNameUnique(userDetails.userName);
+
+    console.log("email", !isEmailUnique);
+    console.log("user", isUserNameUnique);
+  };
+
   const [userDetails, setUserDetails] = useState({
-    firstName: "",
-    lastName: "",
+    userName: "",
     email: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const [userIsTaken, setUserIsTaken] = useState(false);
   const [emailUsed, setEmailIsUsed] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  const usernameRef = useRef();
   const emailRef = useRef();
   const passwordRef = useRef();
   const confirmPasswordRef = useRef();
+
+  useEffect(() => {
+    validateForm();
+  }, [userDetails, userIsTaken, emailUsed]);
+
+  function validateForm() {
+    const { userName, email, password, confirmPassword } = userDetails;
+    if (
+      userName &&
+      email &&
+      password &&
+      confirmPassword &&
+      password == confirmPassword &&
+      !userIsTaken &&
+      !emailUsed
+    ) {
+      setIsButtonDisabled(false);
+    } else {
+      setIsButtonDisabled(true);
+    }
+  }
+  // function submitHandler() {
+  //   console.log(userDetails);
+  // }
 
   return (
     <View style={styles.container}>
@@ -31,14 +66,14 @@ export function SignUp({ navigation }) {
           <Text style={styles.errorText}>Username is already taken.</Text>
         )}
         <TextInput
-          ref={usernameRef}
           returnKeyType="next"
           onSubmitEditing={() => emailRef.current.focus()}
           style={[styles.input, { borderColor: userIsTaken ? "red" : null }]}
           placeholder="Username"
+          onChangeText={(text) =>
+            setUserDetails((prevState) => ({ ...prevState, userName: text }))
+          }
           onEndEditing={(e) => {
-            console.log(e.nativeEvent.text);
-
             if (e.nativeEvent.text === "Jordy") {
               setUserIsTaken(true);
             } else {
@@ -56,9 +91,10 @@ export function SignUp({ navigation }) {
           returnKeyType="next"
           onSubmitEditing={() => passwordRef.current.focus()}
           style={[styles.input, { borderColor: emailUsed ? "red" : null }]}
+          onChangeText={(text) =>
+            setUserDetails((prevState) => ({ ...prevState, email: text }))
+          }
           onEndEditing={(e) => {
-            console.log(e.nativeEvent.text);
-
             if (e.nativeEvent.text === "Jordyfigueroa93@icloud.com") {
               setEmailIsUsed(true);
             } else {
@@ -71,6 +107,9 @@ export function SignUp({ navigation }) {
         <TextInput
           ref={passwordRef}
           returnKeyType="next"
+          onChangeText={(text) =>
+            setUserDetails((prevState) => ({ ...prevState, password: text }))
+          }
           onSubmitEditing={() => confirmPasswordRef.current.focus()}
           style={styles.input}
           placeholder="password"
@@ -79,11 +118,22 @@ export function SignUp({ navigation }) {
         <TextInput
           ref={confirmPasswordRef}
           style={styles.input}
+          onChangeText={(text) =>
+            setUserDetails((prevState) => ({
+              ...prevState,
+              confirmPassword: text,
+            }))
+          }
           placeholder="Confirm Password"
           secureTextEntry={true}
         ></TextInput>
         <View style={styles.buttonSpace}>
-          <CustomButton bgColor={"red"} fColor={"white"}>
+          <CustomButton
+            onPress={submitHandler}
+            bgColor={isButtonDisabled ? "gray" : "red"}
+            fColor={"white"}
+            disabled={isButtonDisabled}
+          >
             SIGN UP
           </CustomButton>
         </View>
