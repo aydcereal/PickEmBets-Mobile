@@ -156,10 +156,11 @@ export const AuthProvider = ({ children }) => {
         return false;
       } else {
         console.log("Email is already registered");
-        return true;
+        return "Exists";
       }
     } catch (error) {
-      console.error(error);
+      console.error(error, "catch error");
+      return "Invalid";
     }
   };
 

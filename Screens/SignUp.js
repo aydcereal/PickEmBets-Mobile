@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View, Image, TextInput } from "react-native";
-import heroImg from "../assets/Logos/hero.png";
 import CustomButton from "../Components/customButton";
 import { useFonts } from "expo-font";
 import { useEffect, useRef, useState, useContext } from "react";
@@ -7,16 +6,56 @@ import AuthContext from "../context/auth-context";
 
 export function SignUp({ navigation }) {
   const { checkIfEmailExists, isDisplayNameUnique } = useContext(AuthContext);
+  const [validEmail, setEmailValid] = useState(true);
+  const [userIsTaken, setUserIsTaken] = useState(null);
+  const [emailUsed, setEmailIsUsed] = useState(null);
+  const [passwordIsValid, setPasswordIsValid] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [fontsLoaded] = useFonts({
     BebasNeue: require("../assets/Fonts/BebasNeue.ttf"),
   });
 
-  const submitHandler = async () => {
-    const isEmailUnique = await checkIfEmailExists(userDetails.email);
-    const isUserNameUnique = await isDisplayNameUnique(userDetails.userName);
+  const handleUserNameCheck = async () => {
+    if (userDetails.userName) {
+      const isUserNameUnique = await isDisplayNameUnique(userDetails.userName);
+      console.log(isUserNameUnique);
 
-    console.log("email", !isEmailUnique);
-    console.log("user", isUserNameUnique);
+      setUserIsTaken(!isUserNameUnique);
+    }
+  };
+
+  const handleEmailCheck = async () => {
+    const emailExists = await checkIfEmailExists(userDetails.email);
+    if (userDetails.email === "Exists") {
+      setEmailIsUsed(emailExists);
+    } else if (emailExists === "Invalid") {
+      setEmailValid(false);
+    }
+  };
+
+  function isPasswordValid(password) {
+    let length = true;
+    let upperCase = true;
+    let LowerCase = true;
+
+    if (password.length < 8) {
+      length = false;
+    }
+    if (!/[A-Z]/.test(password)) {
+      upperCase = false;
+    }
+    if (!/[a-z]/.test(password)) {
+      LowerCase = false;
+    }
+    console.log("password", length && upperCase && LowerCase);
+
+    setPasswordIsValid(length && upperCase && LowerCase);
+  }
+
+  const submitHandler = async () => {
+    handleUserNameCheck();
+    handleEmailCheck();
+    isPasswordValid(userDetails.password);
   };
 
   const [userDetails, setUserDetails] = useState({
@@ -26,37 +65,28 @@ export function SignUp({ navigation }) {
     confirmPassword: "",
   });
 
-  const [userIsTaken, setUserIsTaken] = useState(false);
-  const [emailUsed, setEmailIsUsed] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-
   const emailRef = useRef();
   const passwordRef = useRef();
   const confirmPasswordRef = useRef();
 
   useEffect(() => {
+    setUserIsTaken(false);
+    setEmailIsUsed(false);
+    setEmailValid(true);
+    setPasswordIsValid(true);
+  }, [userDetails]);
+
+  useEffect(() => {
     validateForm();
   }, [userDetails, userIsTaken, emailUsed]);
 
-  function validateForm() {
-    const { userName, email, password, confirmPassword } = userDetails;
-    if (
-      userName &&
-      email &&
-      password &&
-      confirmPassword &&
-      password == confirmPassword &&
-      !userIsTaken &&
-      !emailUsed
-    ) {
-      setIsButtonDisabled(false);
-    } else {
-      setIsButtonDisabled(true);
-    }
-  }
-  // function submitHandler() {
-  //   console.log(userDetails);
-  // }
+  const validateForm = async () => {
+    const { password, confirmPassword } = userDetails;
+
+    setIsButtonDisabled(
+      password !== confirmPassword || userIsTaken || emailUsed
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -68,39 +98,34 @@ export function SignUp({ navigation }) {
         <TextInput
           returnKeyType="next"
           onSubmitEditing={() => emailRef.current.focus()}
-          style={[styles.input, { borderColor: userIsTaken ? "red" : null }]}
+          style={[
+            styles.input,
+            { borderColor: userIsTaken ? "red" : null },
+            { borderWidth: userIsTaken ? 3 : 1 },
+          ]}
           placeholder="Username"
           onChangeText={(text) =>
             setUserDetails((prevState) => ({ ...prevState, userName: text }))
           }
-          onEndEditing={(e) => {
-            if (e.nativeEvent.text === "Jordy") {
-              setUserIsTaken(true);
-            } else {
-              setUserIsTaken(false);
-            }
-          }}
         ></TextInput>
         {emailUsed && (
           <Text style={styles.errorText}>
             This email already has an account.
           </Text>
         )}
+        {!validEmail && <Text style={styles.errorText}>Email is invalid</Text>}
         <TextInput
           ref={emailRef}
           returnKeyType="next"
           onSubmitEditing={() => passwordRef.current.focus()}
-          style={[styles.input, { borderColor: emailUsed ? "red" : null }]}
+          style={[
+            styles.input,
+            { borderColor: emailUsed || !validEmail ? "red" : null },
+            { borderWidth: emailUsed || !validEmail ? 3 : 1 },
+          ]}
           onChangeText={(text) =>
             setUserDetails((prevState) => ({ ...prevState, email: text }))
           }
-          onEndEditing={(e) => {
-            if (e.nativeEvent.text === "Jordyfigueroa93@icloud.com") {
-              setEmailIsUsed(true);
-            } else {
-              setEmailIsUsed(false);
-            }
-          }}
           placeholder="Email"
         ></TextInput>
 
@@ -111,13 +136,21 @@ export function SignUp({ navigation }) {
             setUserDetails((prevState) => ({ ...prevState, password: text }))
           }
           onSubmitEditing={() => confirmPasswordRef.current.focus()}
-          style={styles.input}
+          style={[
+            styles.input,
+            { borderColor: !passwordIsValid ? "red" : null },
+            { borderWidth: !passwordIsValid ? 3 : 1 },
+          ]}
           placeholder="password"
           secureTextEntry={true}
         ></TextInput>
         <TextInput
           ref={confirmPasswordRef}
-          style={styles.input}
+          style={[
+            styles.input,
+            { borderColor: !passwordIsValid ? "red" : null },
+            { borderWidth: !passwordIsValid ? 3 : 1 },
+          ]}
           onChangeText={(text) =>
             setUserDetails((prevState) => ({
               ...prevState,
@@ -127,6 +160,14 @@ export function SignUp({ navigation }) {
           placeholder="Confirm Password"
           secureTextEntry={true}
         ></TextInput>
+        {!passwordIsValid && (
+          <>
+            <Text style={styles.errorText}>Password is Invalid</Text>
+            <Text style={styles.errorText}>At least 1 uppercase letter</Text>
+            <Text style={styles.errorText}>At least 1 lowercase letter</Text>
+            <Text style={styles.errorText}>At least 1 number</Text>
+          </>
+        )}
         <View style={styles.buttonSpace}>
           <CustomButton
             onPress={submitHandler}
